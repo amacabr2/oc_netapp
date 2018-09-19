@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +23,17 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
 public class MainFragment extends Fragment implements NetworkAsyncTask.Listeners, GithubCalls.Callbacks {
 
     // FOR DESIGN
     @BindView(R.id.fragment_main_textview)
     TextView textView;
+
+    private Disposable disposable;
 
     public MainFragment() { }
 
@@ -38,6 +44,12 @@ public class MainFragment extends Fragment implements NetworkAsyncTask.Listeners
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        this.disposeWhenDestroy();
+    }
+
     // -----------------
     // ACTIONS
     // -----------------
@@ -45,7 +57,8 @@ public class MainFragment extends Fragment implements NetworkAsyncTask.Listeners
     @OnClick(R.id.fragment_main_button)
     public void submit(View view) {
         //this.executeHttpRequest();
-        this.executeHttpRequestWithRetrofit();
+        //this.executeHttpRequestWithRetrofit();
+        this.streamShowString();
     }
 
     // -----------------
@@ -88,6 +101,48 @@ public class MainFragment extends Fragment implements NetworkAsyncTask.Listeners
     private void executeHttpRequestWithRetrofit() {
         this.updateUIWhenStartingHTTPRequest();
         GithubCalls.fetchUsersFollowing(this, "JakeWharton");
+    }
+
+    // ------------------------------
+    //  Reactive X
+    // ------------------------------
+
+    // Create Observable
+    private Observable<String> getObservable(){
+        return Observable.just("Cool !");
+    }
+
+    // Create Subscriber
+    private DisposableObserver<String> getSubscriber(){
+        return new DisposableObserver<String>() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onNext(String item) {
+                textView.setText("Observable emits : "+item);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e("TAG","On Error"+Log.getStackTraceString(e));
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e("TAG","On Complete !!");
+            }
+        };
+    }
+
+    // Create Stream and execute it
+    private void streamShowString(){
+        this.disposable = this.getObservable().subscribeWith(getSubscriber());
+    }
+
+    // Dispose subscription
+    private void disposeWhenDestroy(){
+        if (this.disposable != null && !this.disposable.isDisposed()) {
+            this.disposable.dispose();
+        }
     }
 
     // ------------------
