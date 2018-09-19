@@ -1,6 +1,7 @@
 package com.antho.opnetapp.services;
 
 import com.antho.opnetapp.models.GithubUser;
+import com.antho.opnetapp.models.GithubUserInfo;
 
 import java.util.List;
 
@@ -22,4 +23,7 @@ public interface GithubService {
 
     @GET("users/{username}/following")
     Observable<List<GithubUser>> getFollowing(@Path("username") String username);
+
+    @GET("users/{username}")
+    Observable<GithubUserInfo> getUserInfos(@Path("username") String username);
 }
