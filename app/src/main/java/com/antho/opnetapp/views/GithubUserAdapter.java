@@ -9,15 +9,18 @@ import android.view.ViewGroup;
 
 import com.antho.opnetapp.R;
 import com.antho.opnetapp.models.GithubUser;
+import com.bumptech.glide.RequestManager;
 
 import java.util.List;
 
 public class GithubUserAdapter extends RecyclerView.Adapter<GithubUserViewHolder> {
 
     private List<GithubUser> githubUsers;
+    private RequestManager glide;
 
-    public GithubUserAdapter(List<GithubUser> githubUsers) {
+    public GithubUserAdapter(List<GithubUser> githubUsers, RequestManager glide) {
         this.githubUsers = githubUsers;
+        this.glide = glide;
     }
 
     @NonNull
@@ -31,7 +34,7 @@ public class GithubUserAdapter extends RecyclerView.Adapter<GithubUserViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull GithubUserViewHolder holder, int position) {
-        holder.updateWithGithubUser(this.githubUsers.get(position));
+        holder.updateWithGithubUser(this.githubUsers.get(position), this.glide);
     }
 
     @Override

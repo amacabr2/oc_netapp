@@ -1,6 +1,5 @@
 package com.antho.opnetapp.controllers.fragments;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -13,17 +12,15 @@ import android.view.ViewGroup;
 
 import com.antho.opnetapp.R;
 import com.antho.opnetapp.models.GithubUser;
-import com.antho.opnetapp.models.GithubUserInfo;
 import com.antho.opnetapp.streams.GithubStreams;
 import com.antho.opnetapp.views.GithubUserAdapter;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
-import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -57,7 +54,7 @@ public class MainFragment extends Fragment {
 
     private void configureRecyclerView() {
         this.githubUsers = new ArrayList<>();
-        this.adapter = new GithubUserAdapter(this.githubUsers);
+        this.adapter = new GithubUserAdapter(this.githubUsers, Glide.with(this));
         this.recyclerView.setAdapter(this.adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     }
