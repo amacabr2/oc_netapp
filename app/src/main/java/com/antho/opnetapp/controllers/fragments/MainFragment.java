@@ -27,7 +27,9 @@ import butterknife.ButterKnife;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
-public class MainFragment extends Fragment {
+import static android.widget.Toast.*;
+
+public class MainFragment extends Fragment implements GithubUserAdapter.Listener{
 
     // FOR DESIGN
     @BindView(R.id.fragment_main_swipe_container)
@@ -62,7 +64,7 @@ public class MainFragment extends Fragment {
 
     private void configureRecyclerView() {
         this.githubUsers = new ArrayList<>();
-        this.adapter = new GithubUserAdapter(this.githubUsers, Glide.with(this));
+        this.adapter = new GithubUserAdapter(this.githubUsers, Glide.with(this), this);
         this.recyclerView.setAdapter(this.adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     }
@@ -82,9 +84,19 @@ public class MainFragment extends Fragment {
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                         GithubUser user = adapter.getUser(position);
-                        Toast.makeText(getContext(), "You clicked on user : " + user.getLogin(), Toast.LENGTH_SHORT).show();
+                        makeText(getContext(), "You clicked on user : " + user.getLogin(), LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    // ------------------------------
+    //  ACTION
+    // ------------------------------
+
+    @Override
+    public void onClickDeleteButton(int position) {
+        GithubUser user = adapter.getUser(position);
+        makeText(getContext(), "You are trying to delete user : " + user.getLogin(), LENGTH_LONG).show();
     }
 
     // ------------------------------

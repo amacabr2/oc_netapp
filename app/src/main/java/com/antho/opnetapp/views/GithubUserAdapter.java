@@ -15,12 +15,19 @@ import java.util.List;
 
 public class GithubUserAdapter extends RecyclerView.Adapter<GithubUserViewHolder> {
 
+    public interface Listener {
+        void onClickDeleteButton(int position);
+    }
+
+    private final Listener callback;
+
     private List<GithubUser> githubUsers;
     private RequestManager glide;
 
-    public GithubUserAdapter(List<GithubUser> githubUsers, RequestManager glide) {
+    public GithubUserAdapter(List<GithubUser> githubUsers, RequestManager glide, Listener callback) {
         this.githubUsers = githubUsers;
         this.glide = glide;
+        this.callback = callback;
     }
 
     @NonNull
@@ -33,13 +40,13 @@ public class GithubUserAdapter extends RecyclerView.Adapter<GithubUserViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull GithubUserViewHolder holder, int position) {
-        holder.updateWithGithubUser(this.githubUsers.get(position), this.glide);
+    public int getItemCount() {
+        return this.githubUsers.size();
     }
 
     @Override
-    public int getItemCount() {
-        return this.githubUsers.size();
+    public void onBindViewHolder(@NonNull GithubUserViewHolder holder, int position) {
+        holder.updateWithGithubUser(this.githubUsers.get(position), this.glide, this.callback);
     }
 
     public GithubUser getUser(int position) {
