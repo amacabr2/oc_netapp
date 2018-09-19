@@ -4,17 +4,20 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.antho.opnetapp.R;
 import com.antho.opnetapp.models.GithubUser;
 import com.antho.opnetapp.models.GithubUserInfo;
 import com.antho.opnetapp.streams.GithubStreams;
+import com.antho.opnetapp.views.GithubUserAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -27,10 +30,13 @@ import io.reactivex.observers.DisposableObserver;
 public class MainFragment extends Fragment {
 
     // FOR DESIGN
-    @BindView(R.id.fragment_main_textview)
-    TextView textView;
+    @BindView(R.id.fragment_main_recycler_view)
+    private RecyclerView recyclerView;
 
     private Disposable disposable;
+
+    private List<GithubUser> githubUsers;
+    private GithubUserAdapter adapter;
 
     public MainFragment() { }
 
@@ -38,6 +44,8 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, view);
+        this.configureRecyclerView();
+        this.executeHttpRequestWithRetrofit();
         return view;
     }
 
@@ -47,28 +55,23 @@ public class MainFragment extends Fragment {
         this.disposeWhenDestroy();
     }
 
-    // -----------------
-    // ACTIONS
-    // -----------------
-
-    @OnClick(R.id.fragment_main_button)
-    public void submit(View view) {
-        //this.executeHttpRequestWithRetrofit();
-        this.executeSecondHttpRequestWithRetrofit();
+    private void configureRecyclerView() {
+        this.githubUsers = new ArrayList<>();
+        this.adapter = new GithubUserAdapter(this.githubUsers);
+        this.recyclerView.setAdapter(this.adapter);
+        this.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     }
 
     // ------------------------------
-    //  Reactive X
+    //  HTTP (RxJAVA)
     // ------------------------------
 
     private void executeHttpRequestWithRetrofit() {
-        this.updateUIWhenStartingHTTPRequest();
-
         this.disposable = GithubStreams.streamFetchUserFollowing("JakeWharton").subscribeWith(new DisposableObserver<List<GithubUser>>() {
             @Override
             public void onNext(List<GithubUser> users) {
                 Log.e("TAG","On Next");
-                updateUIWithListUsers(users);
+                updateUI(users);
             }
 
             @Override
@@ -81,53 +84,6 @@ public class MainFragment extends Fragment {
                 Log.e("TAG","On Complete !!");
             }
         });
-    }
-
-    private void executeSecondHttpRequestWithRetrofit(){
-        this.updateUIWhenStartingHTTPRequest();
-        this.disposable = GithubStreams.streamFetchUserFollowingAndFetchFirstUserInfos("JakeWharton").subscribeWith(new DisposableObserver<GithubUserInfo>() {
-            @Override
-            public void onNext(GithubUserInfo users) {
-                Log.e("TAG","On Next");
-                updateUIWithUserInfo(users);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e("TAG","On Error"+Log.getStackTraceString(e));
-            }
-
-            @Override
-            public void onComplete() {
-                Log.e("TAG","On Complete !!");
-            }
-        });
-    }
-
-    // Create Observable
-    private Observable<String> getObservable(){
-        return Observable.just("Cool !");
-    }
-
-    // Create Subscriber
-    private DisposableObserver<String> getSubscriber(){
-        return new DisposableObserver<String>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onNext(String item) {
-                textView.setText("Observable emits : "+item);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e("TAG","On Error"+Log.getStackTraceString(e));
-            }
-
-            @Override
-            public void onComplete() {
-                Log.e("TAG","On Complete !!");
-            }
-        };
     }
 
     // Dispose subscription
@@ -141,24 +97,8 @@ public class MainFragment extends Fragment {
     //  UPDATE UI
     // ------------------
 
-    @SuppressLint("SetTextI18n")
-    private void updateUIWhenStartingHTTPRequest(){
-        this.textView.setText("Downloading...");
-    }
-
-    private void updateUIWhenStopingHTTPRequest(String response){
-        this.textView.setText(response);
-    }
-
-    private void updateUIWithListUsers(List<GithubUser> users) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (GithubUser user : users){
-            stringBuilder.append("-").append(user.getLogin()).append("\n");
-        }
-        updateUIWhenStopingHTTPRequest(stringBuilder.toString());
-    }
-
-    private void updateUIWithUserInfo(GithubUserInfo userInfo){
-        updateUIWhenStopingHTTPRequest("The first Following of Jake Wharthon is "+userInfo.getName()+" with "+userInfo.getFollowers()+" followers.");
+    private void updateUI(List<GithubUser> users) {
+        githubUsers.addAll(users);
+        adapter.notifyDataSetChanged();
     }
 }
