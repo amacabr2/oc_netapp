@@ -10,10 +10,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.antho.opnetapp.R;
 import com.antho.opnetapp.models.GithubUser;
 import com.antho.opnetapp.streams.GithubStreams;
+import com.antho.opnetapp.utils.ItemClickSupport;
 import com.antho.opnetapp.views.GithubUserAdapter;
 import com.bumptech.glide.Glide;
 
@@ -45,8 +47,9 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, view);
-        this.configureSwipeRefreshLayout();
         this.configureRecyclerView();
+        this.configureSwipeRefreshLayout();
+        this.configureOnClickRecyclerView();
         this.executeHttpRequestWithRetrofit();
         return view;
     }
@@ -71,6 +74,17 @@ public class MainFragment extends Fragment {
                 executeHttpRequestWithRetrofit();
             }
         });
+    }
+
+    private void configureOnClickRecyclerView() {
+        ItemClickSupport.addTo(recyclerView, R.layout.fragment_main_item)
+                .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        GithubUser user = adapter.getUser(position);
+                        Toast.makeText(getContext(), "You clicked on user : " + user.getLogin(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     // ------------------------------

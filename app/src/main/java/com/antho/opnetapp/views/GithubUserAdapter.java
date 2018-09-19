@@ -41,4 +41,8 @@ public class GithubUserAdapter extends RecyclerView.Adapter<GithubUserViewHolder
     public int getItemCount() {
         return this.githubUsers.size();
     }
+
+    public GithubUser getUser(int position) {
+        return this.githubUsers.get(position);
+    }
 }
