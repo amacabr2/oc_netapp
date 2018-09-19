@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.antho.opnetapp.R;
 import com.antho.opnetapp.models.GithubUser;
+import com.antho.opnetapp.models.GithubUserInfo;
 import com.antho.opnetapp.streams.GithubStreams;
 
 import java.util.List;
@@ -52,7 +53,8 @@ public class MainFragment extends Fragment {
 
     @OnClick(R.id.fragment_main_button)
     public void submit(View view) {
-        this.executeHttpRequestWithRetrofit();
+        //this.executeHttpRequestWithRetrofit();
+        this.executeSecondHttpRequestWithRetrofit();
     }
 
     // ------------------------------
@@ -67,6 +69,27 @@ public class MainFragment extends Fragment {
             public void onNext(List<GithubUser> users) {
                 Log.e("TAG","On Next");
                 updateUIWithListUsers(users);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e("TAG","On Error"+Log.getStackTraceString(e));
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e("TAG","On Complete !!");
+            }
+        });
+    }
+
+    private void executeSecondHttpRequestWithRetrofit(){
+        this.updateUIWhenStartingHTTPRequest();
+        this.disposable = GithubStreams.streamFetchUserFollowingAndFetchFirstUserInfos("JakeWharton").subscribeWith(new DisposableObserver<GithubUserInfo>() {
+            @Override
+            public void onNext(GithubUserInfo users) {
+                Log.e("TAG","On Next");
+                updateUIWithUserInfo(users);
             }
 
             @Override
@@ -133,5 +156,9 @@ public class MainFragment extends Fragment {
             stringBuilder.append("-").append(user.getLogin()).append("\n");
         }
         updateUIWhenStopingHTTPRequest(stringBuilder.toString());
+    }
+
+    private void updateUIWithUserInfo(GithubUserInfo userInfo){
+        updateUIWhenStopingHTTPRequest("The first Following of Jake Wharthon is "+userInfo.getName()+" with "+userInfo.getFollowers()+" followers.");
     }
 }
