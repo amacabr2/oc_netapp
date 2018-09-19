@@ -1,8 +1,6 @@
 package com.antho.opnetapp.controllers.fragments;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +23,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
 import io.reactivex.observers.DisposableObserver;
 
 public class MainFragment extends Fragment implements NetworkAsyncTask.Listeners, GithubCalls.Callbacks {
@@ -135,7 +134,10 @@ public class MainFragment extends Fragment implements NetworkAsyncTask.Listeners
 
     // Create Stream and execute it
     private void streamShowString(){
-        this.disposable = this.getObservable().subscribeWith(getSubscriber());
+        this.disposable = this.getObservable()
+                .map(getFunctionUppercase())
+                .flatMap(getSecondObservable())
+                .subscribeWith(getSubscriber());
     }
 
     // Dispose subscription
@@ -143,6 +145,24 @@ public class MainFragment extends Fragment implements NetworkAsyncTask.Listeners
         if (this.disposable != null && !this.disposable.isDisposed()) {
             this.disposable.dispose();
         }
+    }
+
+    private Function<String, String> getFunctionUppercase() {
+        return new Function<String, String>() {
+            @Override
+            public String apply(String input) {
+                return input.toUpperCase();
+            }
+        };
+    }
+
+    private Function<String, Observable<String>> getSecondObservable() {
+        return new Function<String, Observable<String>>() {
+            @Override
+            public Observable<String> apply(String previousString) throws Exception {
+                return Observable.just(previousString + " I love Openclassroom");
+            }
+        };
     }
 
     // ------------------
